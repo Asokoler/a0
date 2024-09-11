@@ -2,6 +2,7 @@
 #include <stdlib.h> // exit, EXIT_FAILURE, EXIT_SUCCESS.
 #include <string.h> // strerror.
 #include <errno.h>  // errno.
+#include <unistd.h> // access, F_OK, R_OK.
 
 int fileFormatInspector(FILE *file_p){
     int retval = EXIT_FAILURE;
@@ -24,24 +25,42 @@ int fileFormatInspector(FILE *file_p){
         return retval;
 }
 
+int print_error(char *path, int errnum) {
+    fprintf(stdout, "%s: cannot determine (%s)\n",
+    path, strerror(errnum));
+    return EXIT_SUCCESS;
+}
 
 int main(int argc, char *argv[]) {
     int retval = EXIT_FAILURE;
-    if (argc == 2){
-        FILE *file = fopen(argv[1], "r");
-        if (file == NULL) {
-            fclose(file);
-            return retval;
+    if (argc == 1){
+        fprintf(stderr, "Usage: file path\n");
+    }
+
+    else if (argc == 2){
+        if (access(argv[1], F_OK) != 0) {
+            retval = print_error(argv[1],ENOENT);
         }
-        else {
+
+        else if (access(argv[1], R_OK) != 0) {
+            retval = print_error(argv[1],EACCES);
+        }
+
+        else if ((access(argv[1], R_OK) == 0) && (access(argv[1], F_OK) == 0)) {
+            FILE *file = fopen(argv[1], "r");
             retval = fileFormatInspector(file);
             fclose(file);
         }
-    }    
-    else {
-        return retval;
+
+        else {
+            fprintf(stderr, "Error: Something went wrong while reading the file. Not sure what... \n");
+        }
+
     }
+    
+    else{
+        fprintf(stderr, "Usage: Too many arguments provided.\n");
+    }
+    
     return retval;
 }
-
-
