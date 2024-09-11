@@ -3,40 +3,43 @@
 #include <string.h> // strerror.
 #include <errno.h>  // errno.
 
-int typeChecker(char *filename) {
+int fileFormatInspector(char *filename) {
         int retval = EXIT_FAILURE;
         FILE *file = fopen(filename, "r");
+        //Not sure if needed
         if (file == NULL) {
-            perror("fopen");
             int retval = EXIT_FAILURE;
             return retval;
         }
         else {
-            char buffer[1024];
+            char buffer[BUFSIZ];
             while (fgets(buffer, sizeof(buffer), file) != NULL) {
                 fprintf(stdout, "%s", buffer);
-                for (int i = 0; i < sizeof(buffer); i++) {
-                //lav et loop er, som tjekker om den enkelte byte ligger i et bestemt interval
-                    if(buffer[i]=="0x15"){ //det her skal være mere præcist
-                        printf("This is a binary file");
+                for (unsigned long i = 0; i < strlen(buffer); i++) {
+                    if ((unsigned char)buffer[i] > 0x7F && (unsigned char)buffer[i] < 0xFF) {
+                        printf("This is a UTF8-file\n");
                         break;
                     }
+                    else if ((unsigned char)buffer[i] > 0x7F) {
+                        printf("This is not an ascii file\n"); 
+                        break;
+                    };
+                    
                 };
-            }
-            printf("\n");
-            retval = EXIT_SUCCESS;
-        }
+            };
+        printf("\n");
+        retval = EXIT_SUCCESS;
         fclose(file);
         return retval;
+        };
 }
 
 int main(int argc, char *argv[]) {
     int retval = EXIT_SUCCESS;
     if (argc == 2){
-        retval = typeChecker(argv[1]);
+        retval = fileFormatInspector(argv[1]);
     }    
     else {
-        printf("Usage: %s <file>\n", argv[0]);
         retval = EXIT_FAILURE;
     }
     return retval;
