@@ -24,6 +24,7 @@ exitcode=0
 for f in test_files/*.input
 do
   echo ">>> Testing ${f}.."
+  
   file    ${f} | sed -e 's/ASCII text.*/ASCII text/' \
                          -e 's/UTF-8 Unicode text.*/UTF-8 Unicode text/' \
                          -e 's/ISO-8859 text.*/ISO-8859 text/' \
