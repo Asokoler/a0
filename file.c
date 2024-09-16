@@ -4,31 +4,67 @@
 #include <errno.h>  // errno.
 #include <unistd.h> // access, F_OK, R_OK.
 
-int fileFormatInspector(FILE *file_p){
-    int retval = EXIT_FAILURE;
-    char buffer[BUFSIZ];
-    while (fgets(buffer, sizeof(buffer), file_p) != NULL) {
-        fprintf(stdout, "%s", buffer);
-        for (unsigned long i = 0; i < strlen(buffer); i++) {
-            if ((unsigned char)buffer[i] > 0x7F && (unsigned char)buffer[i] < 0xFF) {
-                printf("This is a UTF8-*file\n");
-                break;
-                }
-            else if ((unsigned char)buffer[i] > 0x7F) {
-                printf("This is not an ascii *file\n"); 
-                break;
-                };
-            };            
-    };
-        printf("\n");
-        retval = EXIT_SUCCESS;
-        return retval;
-}
+
 
 int print_error(char *path, int errnum) {
     fprintf(stdout, "%s: cannot determine (%s)\n",
     path, strerror(errnum));
-    return EXIT_SUCCESS;
+    return 0;
+}
+
+int print_type(int type, const char* path) {
+    const char * const FILE_TYPE_STRINGS[] = {
+        "empty",
+        "ASCII text",
+        "UTF-8 Unicode text",
+        "data"
+    };
+    printf("./%s\n%sfile: %s\n", path, FILE_TYPE_STRINGS[type], FILE_TYPE_STRINGS[type]);
+    return 0;
+}
+
+int inspectEmpty(const char* path){
+    FILE *file = fopen(path, "r");
+    int ch = fgetc(file);
+    if (ch == EOF) {
+        return 1; 
+        } 
+    fclose(file);
+    return 0;
+}
+
+int instpectASCII(const char* path){
+    FILE *file = fopen(path, "r");
+    //{0x07, 0x08, . . . 0x0D} ∪ {0x1B} ∪ {0x20, 0x21, . . . , 0x7E}
+    int ch = fgetc(file);
+    while (ch != EOF) {
+        if ((ch >= 0x07 && ch <= 0x0D) || ch == 0x1B || (ch >= 0x20 && ch <= 0x7E)) {
+            ch = fgetc(file);
+        }
+        else {
+            return 0;
+        }
+    };
+    return 1;
+}
+
+int inspectISO(const char* path){
+    FILE *file = fopen(path, "r");
+    //128–159
+    int ch = fgetc(file);
+    while (ch != EOF) {
+        if (ch >= 128 && ch <= 159) {
+            ch = fgetc(file);
+        }
+        else {
+            return 0;
+        }
+    };   
+    return 1;
+} 
+
+int inspectUTF8(const char* path){
+    return 3;
 }
 
 int main(int argc, char *argv[]) {
@@ -47,17 +83,34 @@ int main(int argc, char *argv[]) {
         }
 
         else if ((access(argv[1], R_OK) == 0) && (access(argv[1], F_OK) == 0)) {
-            FILE *file = fopen(argv[1], "r");
-            retval = fileFormatInspector(file);
-            fclose(file);
+            int is_empty = inspectEmpty(argv[1]);
+            int is_ascii = instpectASCII(argv[1]);
+            int is_iso = inspectISO(argv[1]);
+            int is_utf8 = inspectUTF8(argv[1]);
+            
+            if (is_empty){
+                print_type(0, argv[1]);
+            }
+            else if (is_ascii){
+                if (is_iso){
+                    print_type(2, argv[1]);
+                }
+                else {
+                    print_type(1, argv[1]);
+                }
+            }
+            else if (is_utf8){
+                print_type(3, argv[1]);
+            }
+            else {
+                print_type(0, argv[1]);
+            }
         }
-
         else {
             fprintf(stderr, "Error: Something went wrong while reading the file. Not sure what... \n");
         }
 
     }
-    
     else{
         fprintf(stderr, "Usage: Too many arguments provided.\n");
     }
