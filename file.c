@@ -26,11 +26,11 @@ int print_type(int type, const char* path) {
 int inspectEmpty(const char* path){
     FILE *file = fopen(path, "r");
     int ch = fgetc(file);
-    if (ch == EOF) {
-        return 1; 
+    if (ch != EOF) {
+        return 0; 
         } 
     fclose(file);
-    return 0;
+    return 1;
 }
 
 int instpectASCII(const char* path){
@@ -63,9 +63,12 @@ int inspectISOinASCII(const char* path){
     return 1;
 } 
 
-int inspectUTF8(const char* path){
-    return 3;
-}
+//int inspectUTF8(const char* path){
+//    if (access(path, R_OK) != 0) {
+//        return 3;
+//    }
+//    return 0;
+//}
 
 int main(int argc, char *argv[]) {
     int retval = EXIT_FAILURE;
@@ -86,7 +89,7 @@ int main(int argc, char *argv[]) {
             int is_empty = inspectEmpty(argv[1]);
             int is_ascii = instpectASCII(argv[1]);
             int is_iso = inspectISOinASCII(argv[1]);
-            int is_utf8 = inspectUTF8(argv[1]);
+            //int is_utf8 = inspectUTF8(argv[1]);
 
             if (is_empty){
                 print_type(0, argv[1]);
@@ -99,11 +102,11 @@ int main(int argc, char *argv[]) {
                     print_type(1, argv[1]);
                 }
             }
-            else if (is_utf8){
-                print_type(3, argv[1]);
-            }
+            //else if (is_utf8){
+            //    print_type(3, argv[1]);
+            //}
             else {
-                print_type(0, argv[1]);
+                print_type(3, argv[1]);
             }
         }
         else {
