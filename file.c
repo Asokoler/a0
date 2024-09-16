@@ -48,7 +48,7 @@ int instpectASCII(const char* path){
     return 1;
 }
 
-int inspectISO(const char* path){
+int inspectISOinASCII(const char* path){
     FILE *file = fopen(path, "r");
     //128–159
     int ch = fgetc(file);
@@ -85,9 +85,9 @@ int main(int argc, char *argv[]) {
         else if ((access(argv[1], R_OK) == 0) && (access(argv[1], F_OK) == 0)) {
             int is_empty = inspectEmpty(argv[1]);
             int is_ascii = instpectASCII(argv[1]);
-            int is_iso = inspectISO(argv[1]);
+            int is_iso = inspectISOinASCII(argv[1]);
             int is_utf8 = inspectUTF8(argv[1]);
-            
+
             if (is_empty){
                 print_type(0, argv[1]);
             }
