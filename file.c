@@ -65,6 +65,37 @@ int inspectISOinASCII(const char* path) {
     return 1;
 }
 
+int inspectUTF(const char* path) {
+    FILE *file = fopen(path, "r");
+    int ch = fgetc(file);
+    int byteCounter = 1;
+    while (ch != EOF) {
+        if ((ch <= 127) && (ch > 0)) {
+                byteCounter = 1;
+            }
+            else if ((ch <= 223) && (ch >= 192)) {
+                byteCounter = 2;
+            }
+            else if ((ch <= 239) && (ch >= 224)) {
+                byteCounter = 3;
+            }
+            else if ((ch >= 240) && (ch <= 247)) {
+                byteCounter = 4;
+            }
+            for (int i = 0; i < (byteCounter-1); i++) {
+                ch = fgetc(file);
+                if ((ch <= 191) && (ch >= 128)) {
+                    return 1;
+                }
+                else {
+                    return 0;
+                    break;
+                }
+        fclose(file);
+        return 1;
+    }
+}
+
 int main(int argc, char *argv[]) {
     int retval = EXIT_FAILURE;
     if (argc == 1) {
