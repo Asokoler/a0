@@ -72,7 +72,7 @@ printf "\xe6 \xf8 \x00 \xe5\n" > test_files/DATA2_MixISO.input
 printf "Hello \x00 \xe6 \xf8 \x00 \xe5\n" > test_files/DATA3_MixASCISO.input
 printf "Happy \xc4 \xa5 \xe1 \e2 \xc3 \c9d\n \x00" > test_files/DATA4_MixASCISOUTF.input
 
-#--------------Test when the input file is non-readable--------------:
+#-------------------------------Input file is non-readable......--------------:
 printf "hiddenFile" > test_files/hidden_file
 chmod -r test_files/hidden_file
 ./file test_files/hidden_file
@@ -99,15 +99,16 @@ do
   fi
 done
 
-#--------------Test when the input file is non-existing--------------:
+#-------------------------------Input file is non-existing--------------------:
 
-echo "-------------Test result for non-existing file: -------------"
-file  nonExisting | sed -e 's/cannot open.*/cannot determine (No such file or directory)/'\
-                    > "test_files/non-existing_expected"
-./file nonExisting > "test_files/non-exising_actual"
-if ! diff -u "non-existing_expected" "non-exising_actual"
+echo ">>> Testing for non-existing file with fname 'doesNotExist'"..
+file  doesNotExist | sed -e 's/cannot open.*/cannot determine (No such file or directory)/'\
+                    > "test_files/non-existing.expected"
+./file doesNotExist > "test_files/non-existing.actual"
+if ! diff -u "test_files/non-existing.expected" "test_files/non-existing.actual"
 then
     echo ">>> Failed :-("
+    exitcode=1
 else
     echo ">>> Success :-)"
 
