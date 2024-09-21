@@ -79,7 +79,7 @@ int inspectISOinASCII(const char* path) {
     
     //While the ch is not EOF check if the character is in the ASCII range.
     while (ch != EOF) {
-        if (ch >= 128 && ch <= 159) {
+        if (ch >= 160 && ch <= 255) {
             ch = fgetc(file);
         } else {
             fclose(file);
