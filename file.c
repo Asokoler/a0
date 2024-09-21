@@ -8,7 +8,7 @@
 // Function to print error message if file cannot be opened or read.
 int print_error(char *path, int errnum) {
     fprintf(stdout, "%s: cannot determine (%s)\n", path, strerror(errnum));
-    return 0;
+    return 1;
 }
 // Function to print the type of file.
 int print_type(int type, const char* path) {
@@ -153,11 +153,14 @@ int main(int argc, char *argv[]) {
     else if (argc == 2) {
         //Check if the file exists
         if (access(argv[1], F_OK) != 0) {
-            retval = print_error(argv[1], ENOENT);
+            print_error(argv[1], ENOENT);
+            retval = EXIT_SUCCESS;
+
         //Check if the file is readable.
         } 
         else if (access(argv[1], R_OK) != 0) {
-            retval = print_error(argv[1], EACCES);
+            print_error(argv[1], EACCES);
+            retval = EXIT_SUCCESS;
         }
         //Check if the file is readable and exists. 
         else if ((access(argv[1], R_OK) == 0) && (access(argv[1], F_OK) == 0)) {
@@ -171,13 +174,15 @@ int main(int argc, char *argv[]) {
             if (is_empty) {
                 print_type(0, argv[1]);
             }
+            //If the file is not empty, check if it is ASCII.
             else if (is_ascii) {
                 print_type(1, argv[1]);
                 } 
+            //If the file is not empty or ASCII, check if it is ISO-8859.
             else if (is_iso){
                 print_type(2, argv[1]);
                 } 
-            //If the file is not empty or pure ASCII or ISO, check if it is UTF-8 Unicode.
+            //If the file is not empty, pure ASCII or ISO, check if it is UTF-8 Unicode.
             else if (is_utf) {
                 print_type(3, argv[1]);
             } 
