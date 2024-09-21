@@ -15,9 +15,9 @@ int print_type(int type, const char* path) {
     // Array of strings to represent the file types.
     const char * const FILE_TYPE_STRINGS[] = {
         "empty",
-        "ISO-8859 text",
         "ASCII text",
-        "UTF-8 Unicode text",
+        "ISO-8859 text",
+        "Unicode text, UTF-8 text",
         "data"
     };
     printf("%s: %s\n", path, FILE_TYPE_STRINGS[type]);
@@ -67,8 +67,7 @@ int inspectASCII(const char* path) {
     return 1;
 }
 
-//Is meant to be run on files that are ASCII as to check if it is not only ASCII but also ISO-8859 text.
-int inspectISOinASCII(const char* path) {
+int inspectISO(const char* path) {
     // Attempt to open the file in read mode.
     FILE *file = fopen(path, "r");
     if (file == NULL) {
@@ -76,12 +75,13 @@ int inspectISOinASCII(const char* path) {
         return 0;
     }
     int ch = fgetc(file);
-    
     //While the ch is not EOF check if the character is in the ASCII range.
     while (ch != EOF) {
-        if (ch >= 160 && ch <= 255) {
+        if ((ch >= 0x07 && ch <= 0x0D) || ch == 0x1B || (ch >= 0x20 && ch <= 0x7E) || (ch >= 160 && ch <= 255)) {
             ch = fgetc(file);
-        } else {
+        } 
+        else {
+            //As soon an non-ASCII character is found, close the file and return 0.
             fclose(file);
             return 0;
         }
@@ -164,22 +164,19 @@ int main(int argc, char *argv[]) {
             //Check if the file is empty, ASCII, ISO-8859 text, UTF-8 Unicode.
             int is_empty = inspectEmpty(argv[1]);
             int is_ascii = inspectASCII(argv[1]);
-            int is_iso = inspectISOinASCII(argv[1]);
+            int is_iso = inspectISO(argv[1]);
             int is_utf = inspectUTF(argv[1]);
 
             //Is empty is checked first
             if (is_empty) {
                 print_type(0, argv[1]);
             }
-            //If the file is not empty, check if it is ASCII.
-            else if (is_ascii) {    
-                if (is_iso) {
-                    //If the file is ASCII, check if it is also ISO-8859 text.
-                    print_type(1, argv[1]);
-                } else {
-                    print_type(2, argv[1]);
-                }
-            } 
+            else if (is_ascii) {
+                print_type(1, argv[1]);
+                } 
+            else if (is_iso){
+                print_type(2, argv[1]);
+                } 
             //If the file is not empty or pure ASCII or ISO, check if it is UTF-8 Unicode.
             else if (is_utf) {
                 print_type(3, argv[1]);
