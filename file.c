@@ -81,7 +81,7 @@ int inspectISO(const char* path) {
             ch = fgetc(file);
         } 
         else {
-            //As soon an non-ASCII character is found, close the file and return 0.
+            //As soon an non-ISO character is found, close the file and return 0.
             fclose(file);
             return 0;
         }
